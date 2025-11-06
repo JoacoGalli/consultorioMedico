@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# env
+.venv/
+venv/
+.env
+
+# uv
+uv.lock
+
+# IDEs
+.vscode/
+.idea/
+
+# DB
+*.sqlite3
+*.db
+
+# Kivy / caches (si antes lo usaste)
+.kivy/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Consultorio Médico{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="bg-blue-600 text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <a href="{% url 'home' %}" class="text-2xl font-bold flex items-center">
+                    <i class="fas fa-hospital-user mr-2"></i>
+                    Consultorio Médico
+                </a>
+                
+                <div class="flex items-center space-x-4">
+                    {% if user.is_authenticated %}
+                        {% if user.is_staff %}
+                            <a href="{% url 'secretaria_dashboard' %}" class="hover:text-blue-200 transition">
+                                <i class="fas fa-tachometer-alt mr-1"></i> Dashboard
+                            </a>
+                            <a href="{% url 'gestionar_medicos' %}" class="hover:text-blue-200 transition">
+                                <i class="fas fa-user-md mr-1"></i> Médicos
+                            </a>
+                            <a href="{% url 'gestionar_turnos' %}" class="hover:text-blue-200 transition">
+                                <i class="fas fa-calendar-alt mr-1"></i> Turnos
+                            </a>
+                        {% else %}
+                            <a href="{% url 'paciente_dashboard' %}" class="hover:text-blue-200 transition">
+                                <i class="fas fa-home mr-1"></i> Inicio
+                            </a>
+                            <a href="{% url 'mis_turnos' %}" class="hover:text-blue-200 transition">
+                                <i class="fas fa-calendar-check mr-1"></i> Mis Turnos
+                            </a>
+                            <a href="{% url 'reservar_turno' %}" class="hover:text-blue-200 transition">
+                                <i class="fas fa-plus-circle mr-1"></i> Reservar
+                            </a>
+                            <a href="{% url 'perfil' %}" class="hover:text-blue-200 transition">
+                                <i class="fas fa-user mr-1"></i> Perfil
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'logout' %}" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded transition">
+                            <i class="fas fa-sign-out-alt mr-1"></i> Salir
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="hover:text-blue-200 transition">
+                            <i class="fas fa-sign-in-alt mr-1"></i> Ingresar
+                        </a>
+                        <a href="{% url 'registro' %}" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded transition">
+                            <i class="fas fa-user-plus mr-1"></i> Registrarse
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container mx-auto px-4 mt-4">
+            {% for message in messages %}
+                <div class="{% if message.tags == 'error' %}bg-red-100 border-red-400 text-red-700{% elif message.tags == 'success' %}bg-green-100 border-green-400 text-green-700{% elif message.tags == 'warning' %}bg-yellow-100 border-yellow-400 text-yellow-700{% else %}bg-blue-100 border-blue-400 text-blue-700{% endif %} px-4 py-3 rounded border mb-4">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-8">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2024 Consultorio Médico. Todos los derechos reservados.</p>
+            <p class="text-sm text-gray-400 mt-2">Sistema de Gestión de Turnos</p>
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

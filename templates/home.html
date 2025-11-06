@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio - Consultorio Médico{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg shadow-xl p-12 text-white mb-12">
+        <div class="text-center">
+            <h1 class="text-5xl font-bold mb-4">Bienvenido a Nuestro Consultorio</h1>
+            <p class="text-xl mb-8">Sistema de gestión de turnos médicos online</p>
+            <div class="flex justify-center space-x-4">
+                <a href="{% url 'registro' %}" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition transform hover:scale-105">
+                    <i class="fas fa-user-plus mr-2"></i> Registrarse
+                </a>
+                <a href="{% url 'login' %}" class="bg-blue-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-400 transition transform hover:scale-105">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Ingresar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="grid md:grid-cols-3 gap-8 mb-12">
+        <div class="bg-white rounded-lg shadow-lg p-6 text-center hover:shadow-xl transition">
+            <div class="text-blue-600 text-5xl mb-4">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Reservá Online</h3>
+            <p class="text-gray-600">Reservá tus turnos de forma rápida y sencilla desde cualquier dispositivo.</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6 text-center hover:shadow-xl transition">
+            <div class="text-green-600 text-5xl mb-4">
+                <i class="fas fa-user-md"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Múltiples Médicos</h3>
+            <p class="text-gray-600">Elegí entre nuestros profesionales especializados en diferentes áreas.</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6 text-center hover:shadow-xl transition">
+            <div class="text-purple-600 text-5xl mb-4">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Horarios Flexibles</h3>
+            <p class="text-gray-600">Consultá disponibilidad en tiempo real y elegí el horario que mejor te convenga.</p>
+        </div>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="grid md:grid-cols-2 gap-8">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h2 class="text-2xl font-bold mb-4 text-blue-600">
+                <i class="fas fa-user-circle mr-2"></i> Para Pacientes
+            </h2>
+            <ul class="space-y-3 text-gray-700">
+                <li class="flex items-start">
+                    <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                    <span>Creá tu cuenta y gestioná tus datos personales</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                    <span>Reservá turnos según tu cobertura médica</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                    <span>Visualizá todos tus turnos en un solo lugar</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                    <span>Cancelá turnos con anticipación</span>
+                </li>
+            </ul>
+            <a href="{% url 'registro' %}" class="block mt-6 bg-blue-600 text-white text-center py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                Registrarse Ahora
+            </a>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h2 class="text-2xl font-bold mb-4 text-green-600">
+                <i class="fas fa-hospital-user mr-2"></i> Nuestros Servicios
+            </h2>
+            <ul class="space-y-3 text-gray-700">
+                <li class="flex items-start">
+                    <i class="fas fa-heartbeat text-red-500 mr-2 mt-1"></i>
+                    <span>Atención en múltiples especialidades médicas</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-shield-alt text-blue-500 mr-2 mt-1"></i>
+                    <span>Aceptamos todas las coberturas médicas</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-calendar-alt text-purple-500 mr-2 mt-1"></i>
+                    <span>Sistema de turnos organizado y eficiente</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-clock text-orange-500 mr-2 mt-1"></i>
+                    <span>Atención de lunes a sábado</span>
+                </li>
+            </ul>
+            <a href="{% url 'login' %}" class="block mt-6 bg-green-600 text-white text-center py-3 rounded-lg font-semibold hover:bg-green-700 transition">
+                Ingresar al Sistema
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

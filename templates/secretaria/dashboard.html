@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Reservar Turno - Consultorio Médico{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">
+            <i class="fas fa-calendar-plus text-blue-600 mr-2"></i>
+            Reservar Turno
+        </h1>
+        <p class="text-gray-600 mt-2">Seleccioná el médico, fecha y horario para tu consulta</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <form method="post" id="turnoForm">
+            {% csrf_token %}
+
+            <!-- Médico -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-user-md mr-1"></i> Médico
+                </label>
+                {{ form.medico }}
+                {% if form.medico.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.medico.errors.0 }}</p>
+                {% endif %}
+                <p class="text-sm text-gray-500 mt-1">
+                    <i class="fas fa-info-circle"></i> Solo se muestran médicos que aceptan tu cobertura ({{ paciente.cobertura.nombre }})
+                </p>
+            </div>
+
+            <!-- Fecha -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-calendar mr-1"></i> Fecha
+                </label>
+                {{ form.fecha }}
+                {% if form.fecha.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.fecha.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Horario -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-clock mr-1"></i> Horario Disponible
+                </label>
+                <select name="hora" id="horaSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                    <option value="">Seleccioná un médico y fecha primero</option>
+                </select>
+                <div id="loadingHorarios" class="hidden mt-2 text-blue-600">
+                    <i class="fas fa-spinner fa-spin mr-2"></i> Cargando horarios...
+                </div>
+                <div id="noHorarios" class="hidden mt-2 text-red-600">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> No hay horarios disponibles para esta fecha.
+                </div>
+            </div>
+
+            <!-- Motivo -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-comment-medical mr-1"></i> Motivo de la consulta (opcional)
+                </label>
+                {{ form.motivo }}
+                {% if form.motivo.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.motivo.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="flex justify-between items-center">
+                <a href="{% url 'paciente_dashboard' %}" class="text-gray-600 hover:text-gray-700">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver
+                </a>
+                <button 
+                    type="submit" 
+                    class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition transform hover:scale-105"
+                >
+                    <i class="fas fa-check mr-2"></i> Confirmar Turno
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Médicos Disponibles -->
+    <div class="mt-8 bg-blue-50 rounded-lg p-6">
+        <h3 class="font-semibold text-blue-800 mb-4">
+            <i class="fas fa-info-circle mr-2"></i> Médicos Disponibles
+        </h3>
+        <div class="grid md:grid-cols-2 gap-4">
+            {% for medico in medicos %}
+                <div class="bg-white rounded-lg p-4 shadow">
+                    <div class="font-semibold text-gray-800">{{ medico.nombre_completo }}</div>
+                    <div class="text-sm text-gray-600">{{ medico.especialidad }}</div>
+                    <div class="text-xs text-gray-500 mt-2">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        {% for cobertura in medico.coberturas.all %}
+                            {{ cobertura.nombre }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-span-2 text-center text-gray-600">
+                    No hay médicos disponibles para tu cobertura.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const medicoSelect = document.getElementById('id_medico');
+    const fechaInput = document.getElementById('id_fecha');
+    const horaSelect = document.getElementById('horaSelect');
+    const loadingDiv = document.getElementById('loadingHorarios');
+    const noHorariosDiv = document.getElementById('noHorarios');
+
+    function cargarHorarios() {
+        const medicoId = medicoSelect.value;
+        const fecha = fechaInput.value;
+
+        if (!medicoId || !fecha) {
+            horaSelect.innerHTML = '<option value="">Seleccioná un médico y fecha primero</option>';
+            horaSelect.disabled = true;
+            return;
+        }
+
+        loadingDiv.classList.remove('hidden');
+        noHorariosDiv.classList.add('hidden');
+        horaSelect.disabled = true;
+
+        fetch(`/api/horarios-disponibles/?medico_id=${medicoId}&fecha=${fecha}`)
+            .then(response => response.json())
+            .then(data => {
+                loadingDiv.classList.add('hidden');
+                horaSelect.innerHTML = '';
+
+                if (data.horarios && data.horarios.length > 0) {
+                    data.horarios.forEach(hora => {
+                        const option = document.createElement('option');
+                        option.value = hora;
+                        option.textContent = hora + ' hs';
+                        horaSelect.appendChild(option);
+                    });
+                    horaSelect.disabled = false;
+                } else {
+                    horaSelect.innerHTML = '<option value="">No hay horarios disponibles</option>';
+                    noHorariosDiv.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                loadingDiv.classList.add('hidden');
+                console.error('Error:', error);
+                horaSelect.innerHTML = '<option value="">Error al cargar horarios</option>';
+            });
+    }
+
+    medicoSelect.addEventListener('change', cargarHorarios);
+    fechaInput.addEventListener('change', cargarHorarios);
+</script>
+{% endblock %}
