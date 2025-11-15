@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis Turnos - Consultorio Médico{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">
+            <i class="fas fa-calendar-check text-blue-600 mr-2"></i>
+            Mis Turnos
+        </h1>
+        <p class="text-gray-600 mt-2">Historial completo de tus consultas médicas</p>
+    </div>
+
+    <div class="mb-6">
+        <a href="{% url 'reservar_turno' %}" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition transform hover:scale-105">
+            <i class="fas fa-plus-circle mr-2"></i> Reservar Nuevo Turno
+        </a>
+    </div>
+
+    {% if turnos %}
+        <div class="grid gap-6">
+            {% for turno in turnos %}
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+                    <div class="md:flex">
+                        <!-- Fecha sidebar -->
+                        <div class="bg-gradient-to-br {% if turno.estado == 'confirmado' %}from-green-500 to-green-600{% elif turno.estado == 'pendiente' %}from-yellow-500 to-yellow-600{% elif turno.estado == 'cancelado' %}from-red-500 to-red-600{% else %}from-blue-500 to-blue-600{% endif %} md:w-32 p-6 text-white text-center flex flex-col justify-center">
+                            <div class="text-3xl font-bold">{{ turno.fecha|date:"d" }}</div>
+                            <div class="text-sm uppercase">{{ turno.fecha|date:"M" }}</div>
+                            <div class="text-xs mt-1">{{ turno.fecha|date:"Y" }}</div>
+                            <div class="mt-3 text-2xl font-bold">{{ turno.hora|time:"H:i" }}</div>
+                            <div class="text-xs">horas</div>
+                        </div>
+
+                        <!-- Contenido -->
+                        <div class="flex-1 p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                                        <i class="fas fa-user-md text-blue-600 mr-2"></i>
+                                        {{ turno.medico.nombre_completo }}
+                                    </h3>
+                                    <p class="text-gray-600">{{ turno.medico.especialidad }}</p>
+                                </div>
+                                <span class="px-4 py-2 rounded-full text-sm font-semibold
+                                    {% if turno.estado == 'confirmado' %}bg-green-100 text-green-800
+                                    {% elif turno.estado == 'pendiente' %}bg-yellow-100 text-yellow-800
+                                    {% elif turno.estado == 'cancelado' %}bg-red-100 text-red-800
+                                    {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                    <i class="fas {% if turno.estado == 'confirmado' %}fa-check-circle{% elif turno.estado == 'pendiente' %}fa-clock{% elif turno.estado == 'cancelado' %}fa-times-circle{% else %}fa-check{% endif %} mr-1"></i>
+                                    {{ turno.get_estado_display }}
+                                </span>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-4 mb-4">
+                                <div class="flex items-center text-gray-700">
+                                    <i class="fas fa-calendar-alt w-5 text-blue-600"></i>
+                                    <span class="ml-2">{{ turno.fecha|date:"l, d \d\e F \d\e Y" }}</span>
+                                </div>
+                                <div class="flex items-center text-gray-700">
+                                    <i class="fas fa-clock w-5 text-blue-600"></i>
+                                    <span class="ml-2">{{ turno.hora|time:"H:i" }} horas</span>
+                                </div>
+                                {% if turno.medico.telefono %}
+                                <div class="flex items-center text-gray-700">
+                                    <i class="fas fa-phone w-5 text-green-600"></i>
+                                    <span class="ml-2">{{ turno.medico.telefono }}</span>
+                                </div>
+                                {% endif %}
+                                <div class="flex items-center text-gray-700">
+                                    <i class="fas fa-user-clock w-5 text-purple-600"></i>
+                                    <span class="ml-2">Creado: {{ turno.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                                </div>
+                            </div>
+
+                            {% if turno.motivo %}
+                                <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                                    <p class="text-sm font-semibold text-blue-800 mb-1">
+                                        <i class="fas fa-comment-medical mr-1"></i> Motivo de Consulta:
+                                    </p>
+                                    <p class="text-gray-700">{{ turno.motivo }}</p>
+                                </div>
+                            {% endif %}
+
+                            {% if turno.observaciones %}
+                                <div class="bg-yellow-50 rounded-lg p-4 mb-4">
+                                    <p class="text-sm font-semibold text-yellow-800 mb-1">
+                                        <i class="fas fa-sticky-note mr-1"></i> Observaciones:
+                                    </p>
+                                    <p class="text-gray-700">{{ turno.observaciones }}</p>
+                                </div>
+                            {% endif %}
+
+                            <!-- Acciones -->
+                            <div class="flex justify-end space-x-3 mt-4">
+                                {% if turno.es_futuro and turno.estado != 'cancelado' %}
+                                    {% if turno.puede_cancelar %}
+                                        <a href="{% url 'cancelar_turno' turno.id %}" class="text-red-600 hover:text-red-700 font-semibold">
+                                            <i class="fas fa-times-circle mr-1"></i> Cancelar Turno
+                                        </a>
+                                    {% else %}
+                                        <span class="text-gray-400 text-sm">
+                                            <i class="fas fa-info-circle mr-1"></i> No se puede cancelar (menos de 24hs)
+                                        </span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+            <div class="text-gray-400 text-6xl mb-4">
+                <i class="fas fa-calendar-times"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">No tenés turnos registrados</h3>
+            <p class="text-gray-600 mb-6">Empezá reservando tu primer turno médico</p>
+            <a href="{% url 'reservar_turno' %}" class="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                <i class="fas fa-plus-circle mr-2"></i> Reservar Turno
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

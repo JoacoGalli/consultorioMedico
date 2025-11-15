@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestionar Médicos - Consultorio Médico{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">
+                <i class="fas fa-user-md text-blue-600 mr-2"></i>
+                Gestión de Médicos
+            </h1>
+            <p class="text-gray-600 mt-2">Administrá los médicos del consultorio</p>
+        </div>
+        <a href="{% url 'crear_medico' %}" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition transform hover:scale-105">
+            <i class="fas fa-plus-circle mr-2"></i> Agregar Médico
+        </a>
+    </div>
+
+    {% if medicos %}
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for medico in medicos %}
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+                    <!-- Header card -->
+                    <div class="bg-gradient-to-r {% if medico.activo %}from-blue-500 to-blue-600{% else %}from-gray-400 to-gray-500{% endif %} p-6 text-white">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-bold">{{ medico.nombre_completo }}</h3>
+                                <p class="text-blue-100 text-sm mt-1">{{ medico.especialidad }}</p>
+                            </div>
+                            <span class="{% if medico.activo %}bg-green-500{% else %}bg-red-500{% endif %} text-white text-xs px-3 py-1 rounded-full">
+                                {% if medico.activo %}Activo{% else %}Inactivo{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Body card -->
+                    <div class="p-6">
+                        <div class="space-y-3 mb-4">
+                            <div class="flex items-center text-gray-700 text-sm">
+                                <i class="fas fa-id-card w-5 text-blue-600"></i>
+                                <span class="ml-2">Matrícula: {{ medico.matricula }}</span>
+                            </div>
+                            
+                            {% if medico.email %}
+                            <div class="flex items-center text-gray-700 text-sm">
+                                <i class="fas fa-envelope w-5 text-green-600"></i>
+                                <span class="ml-2 truncate">{{ medico.email }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if medico.telefono %}
+                            <div class="flex items-center text-gray-700 text-sm">
+                                <i class="fas fa-phone w-5 text-purple-600"></i>
+                                <span class="ml-2">{{ medico.telefono }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Coberturas -->
+                        <div class="mb-4">
+                            <p class="text-xs font-semibold text-gray-600 mb-2 uppercase">Coberturas:</p>
+                            <div class="flex flex-wrap gap-2">
+                                {% for cobertura in medico.coberturas.all %}
+                                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                                        {{ cobertura.nombre }}
+                                    </span>
+                                {% empty %}
+                                    <span class="text-gray-400 text-xs">Sin coberturas asignadas</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Disponibilidades -->
+                        <div class="mb-4">
+                            <p class="text-xs font-semibold text-gray-600 mb-2 uppercase">Disponibilidad:</p>
+                            {% if medico.disponibilidades.all %}
+                                <div class="text-xs space-y-1">
+                                    {% for disp in medico.disponibilidades.all|slice:":3" %}
+                                        <div class="flex items-center text-gray-600">
+                                            <i class="fas fa-calendar-day w-4 text-orange-600"></i>
+                                            <span class="ml-1">{{ disp.get_dia_semana_display }}: {{ disp.hora_inicio|time:"H:i" }}-{{ disp.hora_fin|time:"H:i" }}</span>
+                                        </div>
+                                    {% endfor %}
+                                    {% if medico.disponibilidades.all|length > 3 %}
+                                        <span class="text-gray-400">+{{ medico.disponibilidades.all|length|add:"-3" }} más</span>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <span class="text-gray-400 text-xs">Sin horarios configurados</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Acciones -->
+                        <div class="flex space-x-2 pt-4 border-t">
+                            <a href="{% url 'editar_medico' medico.id %}" class="flex-1 bg-blue-600 text-white text-center py-2 rounded hover:bg-blue-700 transition text-sm">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <a href="{% url 'gestionar_disponibilidad' medico.id %}" class="flex-1 bg-green-600 text-white text-center py-2 rounded hover:bg-green-700 transition text-sm">
+                                <i class="fas fa-clock"></i> Horarios
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+            <div class="text-gray-400 text-6xl mb-4">
+                <i class="fas fa-user-md"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">No hay médicos registrados</h3>
+            <p class="text-gray-600 mb-6">Comenzá agregando el primer médico del consultorio</p>
+            <a href="{% url 'crear_medico' %}" class="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                <i class="fas fa-plus-circle mr-2"></i> Agregar Médico
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

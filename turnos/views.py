@@ -249,6 +249,18 @@ def gestionar_disponibilidad_view(request, medico_id):
     disponibilidades = medico.disponibilidades.all()
     
     if request.method == 'POST':
+        # Verificar si es eliminación
+        if 'eliminar_disponibilidad' in request.POST:
+            disp_id = request.POST.get('eliminar_disponibilidad')
+            try:
+                disp = DisponibilidadMedico.objects.get(pk=disp_id, medico=medico)
+                disp.delete()
+                messages.success(request, 'Disponibilidad eliminada correctamente.')
+            except DisponibilidadMedico.DoesNotExist:
+                messages.error(request, 'No se pudo eliminar la disponibilidad.')
+            return redirect('gestionar_disponibilidad', medico_id=medico.id)
+        
+        # Si no, es creación
         form = DisponibilidadForm(request.POST)
         if form.is_valid():
             disp = form.save(commit=False)

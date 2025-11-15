@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestionar Disponibilidad - Consultorio Médico{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">
+            <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+            Horarios de Atención
+        </h1>
+        <p class="text-gray-600 mt-2">{{ medico.nombre_completo }} - {{ medico.especialidad }}</p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6">
+        <!-- Formulario Agregar -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-lg p-6 sticky top-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-plus-circle text-green-600 mr-2"></i>
+                    Agregar Horario
+                </h2>
+                
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-calendar-day mr-1"></i> Día de la Semana
+                        </label>
+                        {{ form.dia_semana }}
+                        {% if form.dia_semana.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.dia_semana.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-clock mr-1"></i> Hora Inicio
+                        </label>
+                        {{ form.hora_inicio }}
+                        {% if form.hora_inicio.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.hora_inicio.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-clock mr-1"></i> Hora Fin
+                        </label>
+                        {{ form.hora_fin }}
+                        {% if form.hora_fin.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.hora_fin.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-hourglass-half mr-1"></i> Duración del Turno (minutos)
+                        </label>
+                        {{ form.duracion_turno }}
+                        {% if form.duracion_turno.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.duracion_turno.errors.0 }}</p>
+                        {% endif %}
+                        <p class="text-xs text-gray-500 mt-1">Entre 15 y 120 minutos</p>
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition"
+                    >
+                        <i class="fas fa-plus mr-2"></i> Agregar Horario
+                    </button>
+                </form>
+
+                <div class="mt-6 pt-6 border-t">
+                    <a href="{% url 'gestionar_medicos' %}" class="block text-center text-gray-600 hover:text-gray-700">
+                        <i class="fas fa-arrow-left mr-1"></i> Volver a Médicos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Disponibilidades -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-list text-blue-600 mr-2"></i>
+                    Horarios Configurados
+                </h2>
+
+                {% if disponibilidades %}
+                    <div class="space-y-4">
+                        {% regroup disponibilidades by get_dia_semana_display as dias_agrupados %}
+                        {% for dia in dias_agrupados %}
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h3 class="font-bold text-lg text-gray-800 mb-3 flex items-center">
+                                    <i class="fas fa-calendar-day text-blue-600 mr-2"></i>
+                                    {{ dia.grouper }}
+                                </h3>
+                                
+                                <div class="space-y-2">
+                                    {% for disp in dia.list %}
+                                        <div class="bg-gray-50 rounded-lg p-3 flex justify-between items-center">
+                                            <div class="flex-1">
+                                                <div class="flex items-center space-x-4">
+                                                    <span class="font-semibold text-gray-800">
+                                                        <i class="fas fa-clock text-green-600 mr-1"></i>
+                                                        {{ disp.hora_inicio|time:"H:i" }} - {{ disp.hora_fin|time:"H:i" }}
+                                                    </span>
+                                                    <span class="text-sm text-gray-600">
+                                                        <i class="fas fa-hourglass-half text-orange-600 mr-1"></i>
+                                                        Turnos de {{ disp.duracion_turno }} min
+                                                    </span>
+                                                </div>
+                                                <p class="text-xs text-gray-500 mt-1">
+                                                    Genera aproximadamente {{ disp.generar_horarios|length }} turnos
+                                                </p>
+                                            </div>
+                                            <form method="post" action="{% url 'gestionar_disponibilidad' medico.id %}" class="ml-4">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="eliminar_disponibilidad" value="{{ disp.id }}">
+                                                <button 
+                                                    type="submit" 
+                                                    class="text-red-600 hover:text-red-700"
+                                                    onclick="return confirm('¿Estás seguro de eliminar este horario?')"
+                                                >
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-12">
+                        <div class="text-gray-400 text-6xl mb-4">
+                            <i class="fas fa-calendar-times"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">No hay horarios configurados</h3>
+                        <p class="text-gray-600">Comenzá agregando el primer horario de atención</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Info adicional -->
+            <div class="mt-6 bg-blue-50 rounded-lg p-6">
+                <h3 class="font-semibold text-blue-800 mb-3">
+                    <i class="fas fa-info-circle mr-2"></i> Información
+                </h3>
+                <ul class="text-sm text-blue-700 space-y-2">
+                    <li><i class="fas fa-check mr-2"></i> Podés configurar múltiples horarios por día</li>
+                    <li><i class="fas fa-check mr-2"></i> La duración del turno determina cuántos pacientes puede atender</li>
+                    <li><i class="fas fa-check mr-2"></i> Los pacientes solo verán los horarios disponibles</li>
+                    <li><i class="fas fa-check mr-2"></i> Los horarios ya ocupados no se mostrarán</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Turno - Consultorio Médico{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">
+            <i class="fas fa-calendar-plus text-blue-600 mr-2"></i>
+            Crear Turno
+        </h1>
+        <p class="text-gray-600 mt-2">Asigná un turno a un paciente (registrado o no)</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Selección de Paciente -->
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-user mr-2 text-blue-600"></i>
+                    Información del Paciente
+                </h3>
+                
+                <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-blue-700">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Si el paciente está registrado, seleccionalo de la lista. Si no, dejá el campo vacío y completá nombre y teléfono.
+                    </p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-user-check mr-1"></i> Paciente Registrado (opcional)
+                    </label>
+                    {{ form.paciente }}
+                    {% if form.paciente.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.paciente.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user mr-1"></i> Nombre del Paciente
+                        </label>
+                        {{ form.paciente_nombre }}
+                        {% if form.paciente_nombre.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.paciente_nombre.errors.0 }}</p>
+                        {% endif %}
+                        <p class="text-xs text-gray-500 mt-1">Solo si no está registrado</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-phone mr-1"></i> Teléfono
+                        </label>
+                        {{ form.paciente_telefono }}
+                        {% if form.paciente_telefono.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.paciente_telefono.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datos del Turno -->
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-calendar-alt mr-2 text-green-600"></i>
+                    Datos del Turno
+                </h3>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user-md mr-1"></i> Médico *
+                        </label>
+                        {{ form.medico }}
+                        {% if form.medico.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.medico.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-calendar mr-1"></i> Fecha *
+                        </label>
+                        {{ form.fecha }}
+                        {% if form.fecha.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.fecha.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-clock mr-1"></i> Hora *
+                    </label>
+                    {{ form.hora }}
+                    {% if form.hora.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.hora.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-tag mr-1"></i> Estado
+                    </label>
+                    {{ form.estado }}
+                    {% if form.estado.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.estado.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Motivo y Observaciones -->
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
+                    <i class="fas fa-clipboard mr-2 text-purple-600"></i>
+                    Detalles Adicionales
+                </h3>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-comment-medical mr-1"></i> Motivo de Consulta
+                    </label>
+                    {{ form.motivo }}
+                    {% if form.motivo.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.motivo.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-sticky-note mr-1"></i> Observaciones Internas
+                    </label>
+                    {{ form.observaciones }}
+                    {% if form.observaciones.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.observaciones.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-4">
+                <a href="{% url 'gestionar_turnos' %}" class="text-gray-600 hover:text-gray-700">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver
+                </a>
+                <button 
+                    type="submit" 
+                    class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition transform hover:scale-105"
+                >
+                    <i class="fas fa-save mr-2"></i> Crear Turno
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Ayuda -->
+    <div class="mt-6 bg-yellow-50 rounded-lg p-6">
+        <h3 class="font-semibold text-yellow-800 mb-3">
+            <i class="fas fa-exclamation-triangle mr-2"></i> Importante
+        </h3>
+        <ul class="text-sm text-yellow-700 space-y-2">
+            <li><i class="fas fa-check mr-2"></i> Verificá que el horario esté disponible antes de crear el turno</li>
+            <li><i class="fas fa-check mr-2"></i> Si el paciente no está registrado, es importante tomar sus datos de contacto</li>
+            <li><i class="fas fa-check mr-2"></i> Podés cambiar el estado del turno después de crearlo</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

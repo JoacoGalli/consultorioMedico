@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestionar Turnos - Consultorio Médico{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">
+                <i class="fas fa-calendar-check text-blue-600 mr-2"></i>
+                Gestión de Turnos
+            </h1>
+            <p class="text-gray-600 mt-2">Administrá todos los turnos del consultorio</p>
+        </div>
+        <a href="{% url 'crear_turno_secretaria' %}" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition transform hover:scale-105">
+            <i class="fas fa-plus-circle mr-2"></i> Crear Turno
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <h3 class="font-semibold text-gray-800 mb-4">
+            <i class="fas fa-filter mr-2"></i> Filtros
+        </h3>
+        <form method="get" class="grid md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Médico</label>
+                <select name="medico" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">Todos los médicos</option>
+                    {% for medico in medicos %}
+                        <option value="{{ medico.id }}" {% if request.GET.medico == medico.id|stringformat:"s" %}selected{% endif %}>
+                            {{ medico.nombre_completo }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Fecha</label>
+                <input 
+                    type="date" 
+                    name="fecha" 
+                    value="{{ request.GET.fecha }}"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                <select name="estado" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">Todos los estados</option>
+                    <option value="pendiente" {% if request.GET.estado == "pendiente" %}selected{% endif %}>Pendiente</option>
+                    <option value="confirmado" {% if request.GET.estado == "confirmado" %}selected{% endif %}>Confirmado</option>
+                    <option value="cancelado" {% if request.GET.estado == "cancelado" %}selected{% endif %}>Cancelado</option>
+                    <option value="completado" {% if request.GET.estado == "completado" %}selected{% endif %}>Completado</option>
+                </select>
+            </div>
+
+            <div class="flex items-end">
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-search mr-2"></i> Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de Turnos -->
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        {% if turnos %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Paciente</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Médico</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for turno in turnos %}
+                            <tr class="hover:bg-gray-50 {% if not turno.es_futuro %}opacity-60{% endif %}">
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="font-semibold text-gray-800">{{ turno.fecha|date:"d/m/Y" }}</div>
+                                    <div class="text-xs text-gray-500">{{ turno.fecha|date:"l" }}</div>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap font-semibold text-blue-600">
+                                    {{ turno.hora|time:"H:i" }}hs
+                                </td>
+                                <td class="px-4 py-3">
+                                    {% if turno.paciente %}
+                                        <div class="font-semibold text-gray-800">{{ turno.paciente.nombre_completo }}</div>
+                                        <div class="text-xs text-gray-500">
+                                            DNI: {{ turno.paciente.dni }} | {{ turno.paciente.cobertura.nombre }}
+                                        </div>
+                                    {% else %}
+                                        <div class="font-semibold text-gray-800">{{ turno.paciente_nombre }}</div>
+                                        <div class="text-xs text-gray-500">Sin registro | Tel: {{ turno.paciente_telefono }}</div>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="font-semibold text-gray-800">{{ turno.medico.nombre_completo }}</div>
+                                    <div class="text-xs text-gray-500">{{ turno.medico.especialidad }}</div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold
+                                        {% if turno.estado == 'confirmado' %}bg-green-100 text-green-800
+                                        {% elif turno.estado == 'pendiente' %}bg-yellow-100 text-yellow-800
+                                        {% elif turno.estado == 'cancelado' %}bg-red-100 text-red-800
+                                        {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                        {{ turno.get_estado_display }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="flex space-x-2">
+                                        <button 
+                                            onclick="verDetalle({{ turno.id }})" 
+                                            class="text-blue-600 hover:text-blue-700"
+                                            title="Ver detalle"
+                                        >
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <a href="#" class="text-green-600 hover:text-green-700" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación (si fuera necesario) -->
+            <div class="px-6 py-4 bg-gray-50 border-t">
+                <div class="text-sm text-gray-600">
+                    Mostrando {{ turnos|length }} turno{{ turnos|length|pluralize:",s" }}
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <div class="text-gray-400 text-6xl mb-4">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">No hay turnos registrados</h3>
+                <p class="text-gray-600 mb-6">
+                    {% if request.GET %}
+                        No se encontraron turnos con los filtros aplicados
+                    {% else %}
+                        Comenzá creando el primer turno
+                    {% endif %}
+                </p>
+                <a href="{% url 'crear_turno_secretaria' %}" class="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                    <i class="fas fa-plus-circle mr-2"></i> Crear Turno
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+function verDetalle(turnoId) {
+    // Implementar modal o redirección a detalle
+    alert('Ver detalle del turno #' + turnoId);
+}
+</script>
+{% endblock %}
+{% endblock %}
