@@ -7,10 +7,13 @@ Sistema web desarrollado con Django para la gestión de turnos médicos con múl
 - **Registro y autenticación de pacientes**
 - **Gestión completa de turnos médicos**
 - **Panel administrativo para secretaría**
+- **Gestión de coberturas médicas personalizables**
+- **Calendario visual de turnos disponibles/ocupados**
 - **Múltiples médicos con diferentes especialidades**
 - **Sistema de coberturas médicas**
 - **Horarios dinámicos por médico**
 - **Interfaz moderna con TailwindCSS**
+- **Suite completa de tests automatizados**
 
 ---
 
@@ -287,6 +290,21 @@ python manage.py collectstatic
 ```bash
 python manage.py shell
 ```
+
+### Ejecutar tests
+```bash
+# Todos los tests
+python manage.py test
+
+# Con detalles
+python manage.py test --verbosity=2
+
+# Con coverage
+coverage run --source='turnos' manage.py test turnos
+coverage report
+```
+
+Para más información sobre testing, ver [TESTING.md](TESTING.md)
 
 ---
 
