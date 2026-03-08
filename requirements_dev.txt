@@ -1,0 +1,7 @@
+ruff
+pre-commit
+mypy
+django-stubs
+pytest
+pytest-django
+pytest-cov

@@ -1,0 +1,50 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    "venv",
+    "migrations",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # import sorting
+    "UP",  # pyupgrade
+    "B",   # bugbear
+    "C4",  # comprehensions
+    "SIM", # simplifications
+]
+
+ignore = [
+    "E501" # line length handled by formatter
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["consultorio", "turnos", "pacientes"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.11"
+plugins = ["mypy_django_plugin.main"]
+
+ignore_missing_imports = true
+strict_optional = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.django-stubs]
+django_settings_module = "consultorio.settings"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "consultorio.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
