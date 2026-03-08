@@ -23,6 +23,10 @@ urlpatterns = [
     path('secretaria/medicos/<int:medico_id>/disponibilidad/', views.gestionar_disponibilidad_view, name='gestionar_disponibilidad'),
     path('secretaria/turnos/', views.gestionar_turnos_view, name='gestionar_turnos'),
     path('secretaria/turnos/crear/', views.crear_turno_secretaria_view, name='crear_turno_secretaria'),
+    path('secretaria/coberturas/', views.gestionar_coberturas_view, name='gestionar_coberturas'),
+    path('secretaria/coberturas/crear/', views.crear_cobertura_view, name='crear_cobertura'),
+    path('secretaria/coberturas/<int:cobertura_id>/editar/', views.editar_cobertura_view, name='editar_cobertura'),
+    path('secretaria/calendario/', views.calendario_turnos_view, name='calendario_turnos'),
     
     # API endpoints
     path('api/horarios-disponibles/', views.obtener_horarios_disponibles, name='obtener_horarios'),

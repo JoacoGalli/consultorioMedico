@@ -257,3 +257,15 @@ class TurnoSecretariaForm(forms.ModelForm):
                 'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
             })
         }
+
+class CoberturaForm(forms.ModelForm):
+    class Meta:
+        model = Cobertura
+        fields = ['nombre', 'activa']
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                'placeholder': 'Ej: OSDE, Swiss Medical, IOMA'
+            }),
+            'activa': forms.CheckboxInput(attrs={'class': 'h-4 w-4 text-blue-600'})
+        }

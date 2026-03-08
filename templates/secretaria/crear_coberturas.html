@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Cobertura - Consultorio Médico{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">
+            <i class="fas fa-plus-circle text-blue-600 mr-2"></i>
+            Agregar Nueva Cobertura
+        </h1>
+        <p class="text-gray-600 mt-2">Creá una nueva cobertura médica / obra social</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-shield-alt mr-1"></i> Nombre de la Cobertura *
+                </label>
+                {{ form.nombre }}
+                {% if form.nombre.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.nombre.errors.0 }}</p>
+                {% endif %}
+                <p class="text-sm text-gray-500 mt-1">
+                    Ejemplos: OSDE, Swiss Medical, IOMA, Galeno, Medifé, etc.
+                </p>
+            </div>
+
+            <div class="mb-6">
+                <div class="flex items-center">
+                    {{ form.activa }}
+                    <label for="id_activa" class="ml-2 text-gray-700">
+                        <i class="fas fa-toggle-on text-green-600 mr-1"></i>
+                        Cobertura activa (disponible para pacientes)
+                    </label>
+                </div>
+                {% if form.activa.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.activa.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="flex justify-between items-center pt-4">
+                <a href="{% url 'gestionar_coberturas' %}" class="text-gray-600 hover:text-gray-700">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver
+                </a>
+                <button 
+                    type="submit" 
+                    class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition transform hover:scale-105"
+                >
+                    <i class="fas fa-save mr-2"></i> Guardar Cobertura
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-6 bg-blue-50 rounded-lg p-6">
+        <h3 class="font-semibold text-blue-800 mb-3">
+            <i class="fas fa-info-circle mr-2"></i> Información
+        </h3>
+        <ul class="text-sm text-blue-700 space-y-2">
+            <li><i class="fas fa-check mr-2"></i> Las coberturas inactivas no aparecerán en el sistema de turnos</li>
+            <li><i class="fas fa-check mr-2"></i> Después de crear la cobertura, asignala a los médicos correspondientes</li>
+            <li><i class="fas fa-check mr-2"></i> Los pacientes solo verán médicos que acepten su cobertura</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

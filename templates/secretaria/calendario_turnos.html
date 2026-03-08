@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Calendario de Turnos - Consultorio Médico{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">
+            <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+            Calendario de Turnos
+        </h1>
+        <p class="text-gray-600 mt-2">Vista mensual de disponibilidad de turnos</p>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <form method="get" class="grid md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-user-md mr-1"></i> Médico
+                </label>
+                <select name="medico" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="this.form.submit()">
+                    <option value="">Todos los médicos</option>
+                    {% for m in medicos %}
+                        <option value="{{ m.id }}" {% if medico and medico.id == m.id %}selected{% endif %}>
+                            {{ m.nombre_completo }} - {{ m.especialidad }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-filter mr-1"></i> Mostrar
+                </label>
+                <select name="filtro" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="this.form.submit()">
+                    <option value="todos" {% if filtro == "todos" %}selected{% endif %}>Todos los días</option>
+                    <option value="disponibles" {% if filtro == "disponibles" %}selected{% endif %}>Solo disponibles</option>
+                    <option value="ocupados" {% if filtro == "ocupados" %}selected{% endif %}>Solo ocupados</option>
+                </select>
+            </div>
+
+            <input type="hidden" name="month" value="{{ mes_num }}">
+            <input type="hidden" name="year" value="{{ año }}">
+        </form>
+    </div>
+
+    <!-- Leyenda -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <h3 class="font-semibold text-gray-800 mb-4">
+            <i class="fas fa-info-circle mr-2"></i> Leyenda
+        </h3>
+        <div class="grid md:grid-cols-4 gap-4 text-sm">
+            {% if medico %}
+                <div class="flex items-center">
+                    <div class="w-6 h-6 bg-green-200 border-2 border-green-500 rounded mr-2"></div>
+                    <span>Disponible</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-6 h-6 bg-red-200 border-2 border-red-500 rounded mr-2"></div>
+                    <span>Completo</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-6 h-6 bg-gray-100 border-2 border-gray-300 rounded mr-2"></div>
+                    <span>Sin horarios</span>
+                </div>
+            {% else %}
+                <div class="flex items-center">
+                    <div class="w-6 h-6 bg-blue-200 border-2 border-blue-500 rounded mr-2"></div>
+                    <span>Con turnos</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-6 h-6 bg-gray-100 border-2 border-gray-300 rounded mr-2"></div>
+                    <span>Sin turnos</span>
+                </div>
+            {% endif %}
+            <div class="flex items-center">
+                <div class="w-6 h-6 bg-blue-500 rounded mr-2"></div>
+                <span>Día actual</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendario -->
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <!-- Header del mes -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
+            <div class="flex justify-between items-center">
+                <a href="?month={{ mes_anterior }}&year={{ año_anterior }}{% if medico %}&medico={{ medico.id }}{% endif %}&filtro={{ filtro }}" 
+                   class="text-white hover:text-blue-200 transition">
+                    <i class="fas fa-chevron-left text-2xl"></i>
+                </a>
+                
+                <h2 class="text-3xl font-bold">{{ mes }} {{ año }}</h2>
+                
+                <a href="?month={{ mes_siguiente }}&year={{ año_siguiente }}{% if medico %}&medico={{ medico.id }}{% endif %}&filtro={{ filtro }}" 
+                   class="text-white hover:text-blue-200 transition">
+                    <i class="fas fa-chevron-right text-2xl"></i>
+                </a>
+            </div>
+            {% if medico %}
+                <p class="text-center text-blue-100 mt-2">{{ medico.nombre_completo }} - {{ medico.especialidad }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Días de la semana -->
+        <div class="grid grid-cols-7 bg-gray-100 border-b">
+            {% for dia in dias_semana %}
+                <div class="text-center py-3 font-semibold text-gray-700 border-r last:border-r-0">
+                    {{ dia }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Días del mes -->
+        {% for semana in calendario %}
+            <div class="grid grid-cols-7 border-b last:border-b-0">
+                {% for dia_data in semana %}
+                    {% if dia_data %}
+                        {% with estado=dia_data.estado %}
+                            {% if filtro == "disponibles" and estado != "disponible" and estado != "con_turnos" %}
+                                <!-- Ocultar día -->
+                            {% elif filtro == "ocupados" and estado != "ocupado" %}
+                                <!-- Ocultar día -->
+                            {% else %}
+                                <div class="border-r last:border-r-0 p-3 min-h-[120px] 
+                                    {% if dia_data.fecha.day == dia_data.fecha.today.day and dia_data.fecha.month == dia_data.fecha.today.month %}bg-blue-500 text-white
+                                    {% elif medico %}
+                                        {% if estado == "disponible" %}bg-green-50 hover:bg-green-100
+                                        {% elif estado == "ocupado" %}bg-red-50 hover:bg-red-100
+                                        {% else %}bg-gray-50 hover:bg-gray-100{% endif %}
+                                    {% else %}
+                                        {% if estado == "con_turnos" %}bg-blue-50 hover:bg-blue-100
+                                        {% else %}bg-gray-50 hover:bg-gray-100{% endif %}
+                                    {% endif %} transition cursor-pointer">
+                                    
+                                    <div class="font-bold mb-2">{{ dia_data.dia }}</div>
+                                    
+                                    {% if medico %}
+                                        {% if dia_data.slots_totales > 0 %}
+                                            <div class="text-xs mb-1">
+                                                <span class="{% if estado == 'disponible' %}text-green-700{% elif estado == 'ocupado' %}text-red-700{% endif %} font-semibold">
+                                                    {{ dia_data.slots_disponibles }}/{{ dia_data.slots_totales }}
+                                                </span>
+                                                <span class="{% if dia_data.fecha.day == dia_data.fecha.today.day %}text-white{% else %}text-gray-600{% endif %}">
+                                                    disponible{{ dia_data.slots_disponibles|pluralize:",s" }}
+                                                </span>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                    
+                                    {% if dia_data.turnos %}
+                                        <div class="text-xs space-y-1 mt-2">
+                                            {% for turno in dia_data.turnos|slice:":3" %}
+                                                <div class="{% if dia_data.fecha.day == dia_data.fecha.today.day %}bg-white bg-opacity-20 text-white{% else %}bg-white{% endif %} rounded px-2 py-1 truncate">
+                                                    {{ turno.hora|time:"H:i" }} 
+                                                    {% if not medico %}{{ turno.medico.apellido }}{% endif %}
+                                                </div>
+                                            {% endfor %}
+                                            {% if dia_data.turnos|length > 3 %}
+                                                <div class="text-xs {% if dia_data.fecha.day == dia_data.fecha.today.day %}text-blue-100{% else %}text-gray-500{% endif %}">
+                                                    +{{ dia_data.turnos|length|add:"-3" }} más
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                    {% else %}
+                        <div class="border-r last:border-r-0 p-3 min-h-[120px] bg-gray-100"></div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Información adicional -->
+    {% if medico %}
+        <div class="mt-6 bg-blue-50 rounded-lg p-6">
+            <h3 class="font-semibold text-blue-800 mb-3">
+                <i class="fas fa-clock mr-2"></i> Horarios de {{ medico.nombre_completo }}
+            </h3>
+            <div class="grid md:grid-cols-2 gap-4 text-sm text-blue-700">
+                {% for disp in medico.disponibilidades.all %}
+                    <div class="flex items-center">
+                        <i class="fas fa-calendar-day mr-2"></i>
+                        <span>{{ disp.get_dia_semana_display }}: {{ disp.hora_inicio|time:"H:i" }} - {{ disp.hora_fin|time:"H:i" }} (turnos de {{ disp.duracion_turno }} min)</span>
+                    </div>
+                {% empty %}
+                    <div class="col-span-2 text-gray-600">No hay horarios configurados</div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -6,7 +6,7 @@ from django.db.models import Q
 from datetime import date, datetime, timedelta
 from .models import Paciente, Medico, Turno, DisponibilidadMedico, Cobertura
 from .forms import (RegistroPacienteForm, EditarPerfilForm, TurnoForm, 
-                   MedicoForm, DisponibilidadForm, TurnoSecretariaForm)
+                   MedicoForm, DisponibilidadForm, TurnoSecretariaForm, CoberturaForm)
 from .permissions import secretaria_required, paciente_required, verificar_permiso_turno
 from django.http import JsonResponse
 
@@ -330,6 +330,184 @@ def crear_turno_secretaria_view(request):
         form = TurnoSecretariaForm()
     
     return render(request, 'secretaria/crear_turno.html', {'form': form})
+
+# ============= VISTAS DE COBERTURAS =============
+
+@login_required
+@secretaria_required
+def gestionar_coberturas_view(request):
+    """Listar y gestionar coberturas"""
+    coberturas = Cobertura.objects.all().order_by('nombre')
+    return render(request, 'secretaria/gestionar_coberturas.html', {'coberturas': coberturas})
+
+@login_required
+@secretaria_required
+def crear_cobertura_view(request):
+    """Crear nueva cobertura"""
+    if request.method == 'POST':
+        form = CoberturaForm(request.POST)
+        if form.is_valid():
+            cobertura = form.save()
+            messages.success(request, f'Cobertura {cobertura.nombre} creada exitosamente.')
+            return redirect('gestionar_coberturas')
+    else:
+        form = CoberturaForm()
+    
+    return render(request, 'secretaria/crear_cobertura.html', {'form': form})
+
+@login_required
+@secretaria_required
+def editar_cobertura_view(request, cobertura_id):
+    """Editar cobertura existente"""
+    cobertura = get_object_or_404(Cobertura, pk=cobertura_id)
+    
+    if request.method == 'POST':
+        form = CoberturaForm(request.POST, instance=cobertura)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Cobertura actualizada correctamente.')
+            return redirect('gestionar_coberturas')
+    else:
+        form = CoberturaForm(instance=cobertura)
+    
+    return render(request, 'secretaria/editar_cobertura.html', {
+        'form': form,
+        'cobertura': cobertura
+    })
+
+# ============= CALENDARIO DE TURNOS =============
+
+@login_required
+@secretaria_required
+def calendario_turnos_view(request):
+    """Vista de calendario con turnos disponibles y ocupados"""
+    from calendar import monthcalendar, month_name
+    
+    # Obtener mes y año de los parámetros (o usar actual)
+    today = date.today()
+    year = int(request.GET.get('year', today.year))
+    month = int(request.GET.get('month', today.month))
+    medico_id = request.GET.get('medico')
+    filtro = request.GET.get('filtro', 'todos')  # 'todos', 'disponibles', 'ocupados'
+    
+    # Obtener médico seleccionado
+    medico = None
+    if medico_id:
+        try:
+            medico = Medico.objects.get(pk=medico_id, activo=True)
+        except Medico.DoesNotExist:
+            pass
+    
+    # Generar calendario
+    cal = monthcalendar(year, month)
+    
+    # Obtener turnos del mes
+    primer_dia = date(year, month, 1)
+    if month == 12:
+        ultimo_dia = date(year + 1, 1, 1) - timedelta(days=1)
+    else:
+        ultimo_dia = date(year, month + 1, 1) - timedelta(days=1)
+    
+    turnos_query = Turno.objects.filter(
+        fecha__gte=primer_dia,
+        fecha__lte=ultimo_dia,
+        estado__in=['pendiente', 'confirmado']
+    )
+    
+    if medico:
+        turnos_query = turnos_query.filter(medico=medico)
+    
+    # Crear diccionario de turnos por fecha
+    turnos_por_fecha = {}
+    for turno in turnos_query:
+        fecha_str = turno.fecha.strftime('%Y-%m-%d')
+        if fecha_str not in turnos_por_fecha:
+            turnos_por_fecha[fecha_str] = []
+        turnos_por_fecha[fecha_str].append(turno)
+    
+    # Calcular disponibilidad por día
+    dias_calendario = []
+    for semana in cal:
+        semana_datos = []
+        for dia in semana:
+            if dia == 0:
+                semana_datos.append(None)
+            else:
+                fecha = date(year, month, dia)
+                fecha_str = fecha.strftime('%Y-%m-%d')
+                
+                # Contar turnos del día
+                turnos_dia = turnos_por_fecha.get(fecha_str, [])
+                
+                # Calcular slots disponibles si hay médico seleccionado
+                slots_totales = 0
+                slots_ocupados = len(turnos_dia)
+                
+                if medico:
+                    # Obtener disponibilidades del médico para ese día de la semana
+                    dia_semana = fecha.weekday()
+                    disponibilidades = DisponibilidadMedico.objects.filter(
+                        medico=medico,
+                        dia_semana=dia_semana
+                    )
+                    
+                    for disp in disponibilidades:
+                        slots_totales += len(disp.generar_horarios())
+                
+                slots_disponibles = slots_totales - slots_ocupados if medico else None
+                
+                # Determinar estado del día
+                if medico:
+                    if slots_disponibles == 0 and slots_totales > 0:
+                        estado = 'ocupado'
+                    elif slots_disponibles > 0:
+                        estado = 'disponible'
+                    else:
+                        estado = 'sin_horario'
+                else:
+                    if slots_ocupados > 0:
+                        estado = 'con_turnos'
+                    else:
+                        estado = 'sin_turnos'
+                
+                semana_datos.append({
+                    'dia': dia,
+                    'fecha': fecha,
+                    'estado': estado,
+                    'turnos': turnos_dia,
+                    'slots_disponibles': slots_disponibles,
+                    'slots_totales': slots_totales,
+                    'slots_ocupados': slots_ocupados
+                })
+        
+        dias_calendario.append(semana_datos)
+    
+    # Navegación de meses
+    mes_anterior = month - 1 if month > 1 else 12
+    año_anterior = year if month > 1 else year - 1
+    mes_siguiente = month + 1 if month < 12 else 1
+    año_siguiente = year if month < 12 else year + 1
+    
+    medicos = Medico.objects.filter(activo=True)
+
+    dias_semana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
+    
+    context = {
+        'calendario': dias_calendario,
+        'mes': month_name[month],
+        'año': year,
+        'mes_num': month,
+        'medico': medico,
+        'medicos': medicos,
+        'filtro': filtro,
+        'mes_anterior': mes_anterior,
+        'año_anterior': año_anterior,
+        'mes_siguiente': mes_siguiente,
+        'año_siguiente': año_siguiente,
+        'dias_semana': dias_semana,
+    }
+    
+    return render(request, 'secretaria/calendario_turnos.html', context)
 
 # ============= AJAX ENDPOINTS =============
 

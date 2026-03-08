@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Cobertura - Consultorio Médico{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">
+            <i class="fas fa-edit text-blue-600 mr-2"></i>
+            Editar Cobertura
+        </h1>
+        <p class="text-gray-600 mt-2">Actualizá los datos de {{ cobertura.nombre }}</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-shield-alt mr-1"></i> Nombre de la Cobertura *
+                </label>
+                {{ form.nombre }}
+                {% if form.nombre.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.nombre.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-6">
+                <div class="flex items-center">
+                    {{ form.activa }}
+                    <label for="id_activa" class="ml-2 text-gray-700">
+                        <i class="fas fa-toggle-on text-green-600 mr-1"></i>
+                        Cobertura activa (disponible para pacientes)
+                    </label>
+                </div>
+                {% if form.activa.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.activa.errors.0 }}</p>
+                {% endif %}
+                <p class="text-sm text-gray-600 mt-2">
+                    <i class="fas fa-info-circle"></i> Si desactivás la cobertura, no estará disponible para nuevos registros
+                </p>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <h3 class="font-semibold text-gray-800 mb-3">Uso actual:</h3>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="flex items-center">
+                        <i class="fas fa-users text-blue-600 mr-2"></i>
+                        <span>{{ cobertura.pacientes.count }} paciente{{ cobertura.pacientes.count|pluralize:",s" }}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-user-md text-green-600 mr-2"></i>
+                        <span>{{ cobertura.medicos.count }} médico{{ cobertura.medicos.count|pluralize:",s" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-4">
+                <a href="{% url 'gestionar_coberturas' %}" class="text-gray-600 hover:text-gray-700">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver
+                </a>
+                <button 
+                    type="submit" 
+                    class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition transform hover:scale-105"
+                >
+                    <i class="fas fa-save mr-2"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

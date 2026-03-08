@@ -1,163 +1,173 @@
 {% extends 'base.html' %}
 
-{% block title %}Reservar Turno - Consultorio Médico{% endblock %}
+{% block title %}Panel de Secretaría - Consultorio Médico{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
-    <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">
-            <i class="fas fa-calendar-plus text-blue-600 mr-2"></i>
-            Reservar Turno
+<div class="max-w-7xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-800">
+            Panel de Secretaría
         </h1>
-        <p class="text-gray-600 mt-2">Seleccioná el médico, fecha y horario para tu consulta</p>
+        <p class="text-gray-600 mt-2">Gestión completa del consultorio</p>
     </div>
 
-    <div class="bg-white rounded-lg shadow-lg p-8">
-        <form method="post" id="turnoForm">
-            {% csrf_token %}
-
-            <!-- Médico -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-user-md mr-1"></i> Médico
-                </label>
-                {{ form.medico }}
-                {% if form.medico.errors %}
-                    <p class="text-red-500 text-sm mt-1">{{ form.medico.errors.0 }}</p>
-                {% endif %}
-                <p class="text-sm text-gray-500 mt-1">
-                    <i class="fas fa-info-circle"></i> Solo se muestran médicos que aceptan tu cobertura ({{ paciente.cobertura.nombre }})
-                </p>
-            </div>
-
-            <!-- Fecha -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-calendar mr-1"></i> Fecha
-                </label>
-                {{ form.fecha }}
-                {% if form.fecha.errors %}
-                    <p class="text-red-500 text-sm mt-1">{{ form.fecha.errors.0 }}</p>
-                {% endif %}
-            </div>
-
-            <!-- Horario -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-clock mr-1"></i> Horario Disponible
-                </label>
-                <select name="hora" id="horaSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
-                    <option value="">Seleccioná un médico y fecha primero</option>
-                </select>
-                <div id="loadingHorarios" class="hidden mt-2 text-blue-600">
-                    <i class="fas fa-spinner fa-spin mr-2"></i> Cargando horarios...
+    <!-- Statistics Cards -->
+    <div class="grid md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-blue-100 text-sm">Turnos Hoy</p>
+                    <p class="text-3xl font-bold mt-1">{{ turnos_hoy|length }}</p>
                 </div>
-                <div id="noHorarios" class="hidden mt-2 text-red-600">
-                    <i class="fas fa-exclamation-triangle mr-2"></i> No hay horarios disponibles para esta fecha.
+                <div class="text-5xl opacity-50">
+                    <i class="fas fa-calendar-day"></i>
                 </div>
             </div>
+        </div>
 
-            <!-- Motivo -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-comment-medical mr-1"></i> Motivo de la consulta (opcional)
-                </label>
-                {{ form.motivo }}
-                {% if form.motivo.errors %}
-                    <p class="text-red-500 text-sm mt-1">{{ form.motivo.errors.0 }}</p>
-                {% endif %}
-            </div>
-
-            <div class="flex justify-between items-center">
-                <a href="{% url 'paciente_dashboard' %}" class="text-gray-600 hover:text-gray-700">
-                    <i class="fas fa-arrow-left mr-1"></i> Volver
-                </a>
-                <button 
-                    type="submit" 
-                    class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition transform hover:scale-105"
-                >
-                    <i class="fas fa-check mr-2"></i> Confirmar Turno
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Médicos Disponibles -->
-    <div class="mt-8 bg-blue-50 rounded-lg p-6">
-        <h3 class="font-semibold text-blue-800 mb-4">
-            <i class="fas fa-info-circle mr-2"></i> Médicos Disponibles
-        </h3>
-        <div class="grid md:grid-cols-2 gap-4">
-            {% for medico in medicos %}
-                <div class="bg-white rounded-lg p-4 shadow">
-                    <div class="font-semibold text-gray-800">{{ medico.nombre_completo }}</div>
-                    <div class="text-sm text-gray-600">{{ medico.especialidad }}</div>
-                    <div class="text-xs text-gray-500 mt-2">
-                        <i class="fas fa-shield-alt mr-1"></i>
-                        {% for cobertura in medico.coberturas.all %}
-                            {{ cobertura.nombre }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </div>
+        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-green-100 text-sm">Médicos Activos</p>
+                    <p class="text-3xl font-bold mt-1">{{ medicos_activos }}</p>
                 </div>
-            {% empty %}
-                <div class="col-span-2 text-center text-gray-600">
-                    No hay médicos disponibles para tu cobertura.
+                <div class="text-5xl opacity-50">
+                    <i class="fas fa-user-md"></i>
                 </div>
-            {% endfor %}
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-purple-100 text-sm">Pacientes Totales</p>
+                    <p class="text-3xl font-bold mt-1">{{ pacientes_total }}</p>
+                </div>
+                <div class="text-5xl opacity-50">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- Quick Actions -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <a href="{% url 'crear_turno_secretaria' %}" class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition transform hover:scale-105">
+            <div class="text-center">
+                <div class="bg-blue-100 rounded-full p-4 inline-block mb-3">
+                    <i class="fas fa-calendar-plus text-blue-600 text-3xl"></i>
+                </div>
+                <h3 class="font-bold text-gray-800">Crear Turno</h3>
+                <p class="text-sm text-gray-600 mt-1">Asignar nuevo turno</p>
+            </div>
+        </a>
+
+        <a href="{% url 'gestionar_turnos' %}" class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition transform hover:scale-105">
+            <div class="text-center">
+                <div class="bg-green-100 rounded-full p-4 inline-block mb-3">
+                    <i class="fas fa-calendar-check text-green-600 text-3xl"></i>
+                </div>
+                <h3 class="font-bold text-gray-800">Ver Turnos</h3>
+                <p class="text-sm text-gray-600 mt-1">Gestionar turnos</p>
+            </div>
+        </a>
+
+        <a href="{% url 'gestionar_medicos' %}" class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition transform hover:scale-105">
+            <div class="text-center">
+                <div class="bg-purple-100 rounded-full p-4 inline-block mb-3">
+                    <i class="fas fa-user-md text-purple-600 text-3xl"></i>
+                </div>
+                <h3 class="font-bold text-gray-800">Médicos</h3>
+                <p class="text-sm text-gray-600 mt-1">Gestionar médicos</p>
+            </div>
+        </a>
+
+        <a href="{% url 'gestionar_coberturas' %}" class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition transform hover:scale-105">
+            <div class="text-center">
+                <div class="bg-indigo-100 rounded-full p-4 inline-block mb-3">
+                    <i class="fas fa-shield-alt text-indigo-600 text-3xl"></i>
+                </div>
+                <h3 class="font-bold text-gray-800">Coberturas</h3>
+                <p class="text-sm text-gray-600 mt-1">Gestionar coberturas</p>
+            </div>
+        </a>
+
+        <a href="{% url 'calendario_turnos' %}" class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition transform hover:scale-105">
+            <div class="text-center">
+                <div class="bg-orange-100 rounded-full p-4 inline-block mb-3">
+                    <i class="fas fa-calendar text-orange-600 text-3xl"></i>
+                </div>
+                <h3 class="font-bold text-gray-800">Calendario</h3>
+                <p class="text-sm text-gray-600 mt-1">Vista mensual</p>
+            </div>
+        </a>
+    </div>
+
+    <!-- Turnos de Hoy -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">
+            <i class="fas fa-calendar-day text-blue-600 mr-2"></i>
+            Turnos de Hoy
+        </h2>
+
+        {% if turnos_hoy %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hora</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Paciente</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Médico</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for turno in turnos_hoy %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 whitespace-nowrap font-semibold">
+                                    {{ turno.hora|time:"H:i" }}hs
+                                </td>
+                                <td class="px-4 py-3">
+                                    {% if turno.paciente %}
+                                        {{ turno.paciente.nombre_completo }}
+                                        <div class="text-xs text-gray-500">DNI: {{ turno.paciente.dni }}</div>
+                                    {% else %}
+                                        {{ turno.paciente_nombre }}
+                                        <div class="text-xs text-gray-500">Tel: {{ turno.paciente_telefono }}</div>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3">
+                                    {{ turno.medico.nombre_completo }}
+                                    <div class="text-xs text-gray-500">{{ turno.medico.especialidad }}</div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold
+                                        {% if turno.estado == 'confirmado' %}bg-green-100 text-green-800
+                                        {% elif turno.estado == 'pendiente' %}bg-yellow-100 text-yellow-800
+                                        {% elif turno.estado == 'cancelado' %}bg-red-100 text-red-800
+                                        {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                        {{ turno.get_estado_display }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <a href="{% url 'gestionar_turnos' %}?turno_id={{ turno.id }}" class="text-blue-600 hover:text-blue-700">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <div class="text-gray-400 text-6xl mb-4">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <p class="text-gray-600">No hay turnos programados para hoy</p>
+            </div>
+        {% endif %}
+    </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    const medicoSelect = document.getElementById('id_medico');
-    const fechaInput = document.getElementById('id_fecha');
-    const horaSelect = document.getElementById('horaSelect');
-    const loadingDiv = document.getElementById('loadingHorarios');
-    const noHorariosDiv = document.getElementById('noHorarios');
-
-    function cargarHorarios() {
-        const medicoId = medicoSelect.value;
-        const fecha = fechaInput.value;
-
-        if (!medicoId || !fecha) {
-            horaSelect.innerHTML = '<option value="">Seleccioná un médico y fecha primero</option>';
-            horaSelect.disabled = true;
-            return;
-        }
-
-        loadingDiv.classList.remove('hidden');
-        noHorariosDiv.classList.add('hidden');
-        horaSelect.disabled = true;
-
-        fetch(`/api/horarios-disponibles/?medico_id=${medicoId}&fecha=${fecha}`)
-            .then(response => response.json())
-            .then(data => {
-                loadingDiv.classList.add('hidden');
-                horaSelect.innerHTML = '';
-
-                if (data.horarios && data.horarios.length > 0) {
-                    data.horarios.forEach(hora => {
-                        const option = document.createElement('option');
-                        option.value = hora;
-                        option.textContent = hora + ' hs';
-                        horaSelect.appendChild(option);
-                    });
-                    horaSelect.disabled = false;
-                } else {
-                    horaSelect.innerHTML = '<option value="">No hay horarios disponibles</option>';
-                    noHorariosDiv.classList.remove('hidden');
-                }
-            })
-            .catch(error => {
-                loadingDiv.classList.add('hidden');
-                console.error('Error:', error);
-                horaSelect.innerHTML = '<option value="">Error al cargar horarios</option>';
-            });
-    }
-
-    medicoSelect.addEventListener('change', cargarHorarios);
-    fechaInput.addEventListener('change', cargarHorarios);
-</script>
 {% endblock %}

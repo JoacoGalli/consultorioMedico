@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from decouple import config
+import sys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -49,7 +50,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'consultorio.wsgi.application'
 
 # Database
 DATABASES = {
@@ -58,6 +58,18 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Configuración específica para tests
+if 'test' in sys.argv:
+    # Usar base de datos en memoria para tests más rápidos
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
+
+WSGI_APPLICATION = 'consultorio.wsgi.application'
+
+
 
 # Para PostgreSQL (comentado por defecto):
 # DATABASES = {

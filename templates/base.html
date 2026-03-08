@@ -26,8 +26,14 @@
                             <a href="{% url 'gestionar_medicos' %}" class="hover:text-blue-200 transition">
                                 <i class="fas fa-user-md mr-1"></i> Médicos
                             </a>
+                            <a href="{% url 'gestionar_coberturas' %}" class="hover:text-blue-200 transition">
+                                <i class="fas fa-shield-alt mr-1"></i> Coberturas
+                            </a>
                             <a href="{% url 'gestionar_turnos' %}" class="hover:text-blue-200 transition">
                                 <i class="fas fa-calendar-alt mr-1"></i> Turnos
+                            </a>
+                            <a href="{% url 'calendario_turnos' %}" class="hover:text-blue-200 transition">
+                                <i class="fas fa-calendar mr-1"></i> Calendario
                             </a>
                         {% else %}
                             <a href="{% url 'paciente_dashboard' %}" class="hover:text-blue-200 transition">
