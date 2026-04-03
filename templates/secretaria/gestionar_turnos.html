@@ -45,17 +45,6 @@
                 >
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                <select name="estado" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option value="">Todos los estados</option>
-                    <option value="pendiente" {% if request.GET.estado == "pendiente" %}selected{% endif %}>Pendiente</option>
-                    <option value="confirmado" {% if request.GET.estado == "confirmado" %}selected{% endif %}>Confirmado</option>
-                    <option value="cancelado" {% if request.GET.estado == "cancelado" %}selected{% endif %}>Cancelado</option>
-                    <option value="completado" {% if request.GET.estado == "completado" %}selected{% endif %}>Completado</option>
-                </select>
-            </div>
-
             <div class="flex items-end">
                 <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
                     <i class="fas fa-search mr-2"></i> Filtrar
@@ -91,12 +80,12 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     {% if turno.paciente %}
-                                        <div class="font-semibold text-gray-800">{{ turno.paciente.nombre_completo }}</div>
+                                        <div class="font-semibold text-gray-800">{{ turno.paciente.user.first_name }} {{ turno.paciente.user.last_name }}</div>
                                         <div class="text-xs text-gray-500">
-                                            DNI: {{ turno.paciente.dni }} | {{ turno.paciente.cobertura.nombre }}
+                                            DNI: {{ turno.paciente.dni }}{% if turno.paciente.cobertura %} | {{ turno.paciente.cobertura.nombre }}{% endif %}
                                         </div>
                                     {% else %}
-                                        <div class="font-semibold text-gray-800">{{ turno.paciente_nombre }}</div>
+                                        <div class="font-semibold text-gray-800">{{ turno.paciente_apellido }}, {{ turno.paciente_nombre }}</div>
                                         <div class="text-xs text-gray-500">Sin registro | Tel: {{ turno.paciente_telefono }}</div>
                                     {% endif %}
                                 </td>
@@ -106,24 +95,21 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     <span class="px-3 py-1 rounded-full text-xs font-semibold
-                                        {% if turno.estado == 'confirmado' %}bg-green-100 text-green-800
-                                        {% elif turno.estado == 'pendiente' %}bg-yellow-100 text-yellow-800
-                                        {% elif turno.estado == 'cancelado' %}bg-red-100 text-red-800
-                                        {% else %}bg-blue-100 text-blue-800{% endif %}">
-                                        {{ turno.get_estado_display }}
+                                        {% if turno.estado == 'completado' %}bg-gray-100 text-gray-800
+                                        {% elif turno.estado == 'en_curso' %}bg-blue-100 text-blue-800
+                                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                        {% if turno.estado == 'completado' %}Completado
+                                        {% elif turno.estado == 'en_curso' %}En Curso
+                                        {% else %}Pendiente{% endif %}
                                     </span>
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     <div class="flex space-x-2">
-                                        <button 
-                                            onclick="verDetalle({{ turno.id }})" 
-                                            class="text-blue-600 hover:text-blue-700"
-                                            title="Ver detalle"
-                                        >
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <a href="#" class="text-green-600 hover:text-green-700" title="Editar">
+                                        <a href="{% url 'editar_turno' turno.id %}" class="text-blue-600 hover:text-blue-700" title="Editar">
                                             <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'eliminar_turno' turno.id %}" class="text-red-600 hover:text-red-700" title="Cancelar">
+                                            <i class="fas fa-trash"></i>
                                         </a>
                                     </div>
                                 </td>
@@ -133,7 +119,6 @@
                 </table>
             </div>
 
-            <!-- Paginación (si fuera necesario) -->
             <div class="px-6 py-4 bg-gray-50 border-t">
                 <div class="text-sm text-gray-600">
                     Mostrando {{ turnos|length }} turno{{ turnos|length|pluralize:",s" }}
@@ -160,12 +145,4 @@
     </div>
 </div>
 
-{% block scripts %}
-<script>
-function verDetalle(turnoId) {
-    // Implementar modal o redirección a detalle
-    alert('Ver detalle del turno #' + turnoId);
-}
-</script>
-{% endblock %}
 {% endblock %}

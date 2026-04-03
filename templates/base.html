@@ -35,6 +35,12 @@
                             <a href="{% url 'calendario_turnos' %}" class="hover:text-blue-200 transition">
                                 <i class="fas fa-calendar mr-1"></i> Calendario
                             </a>
+                            <a href="{% url 'crear_sobreturno' %}" class="hover:text-blue-200 transition">
+                                <i class="fas fa-bolt mr-1"></i> Sobreturnos
+                            </a>
+                            <a href="{% url 'gestionar_cancelaciones' %}" class="hover:text-blue-200 transition">
+                                <i class="fas fa-ban mr-1"></i> Cancelaciones
+                            </a>
                         {% else %}
                             <a href="{% url 'paciente_dashboard' %}" class="hover:text-blue-200 transition">
                                 <i class="fas fa-home mr-1"></i> Inicio

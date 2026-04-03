@@ -4,22 +4,31 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">
-            <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
-            Calendario de Turnos
-        </h1>
-        <p class="text-gray-600 mt-2">Vista mensual de disponibilidad de turnos</p>
+    <div class="mb-8 flex justify-between items-center flex-wrap gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">
+                <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+                Calendario de Turnos
+            </h1>
+            <p class="text-gray-600 mt-2">Hacé click en un día para ver los turnos</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'crear_turno_secretaria' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                <i class="fas fa-plus mr-2"></i> Crear Turno
+            </a>
+            <a href="{% url 'cancelar_dia' %}" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
+                <i class="fas fa-calendar-times mr-2"></i> Cancelar Día
+            </a>
+        </div>
     </div>
 
-    <!-- Filtros -->
     <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <form method="get" class="grid md:grid-cols-3 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+        <form method="get" class="flex flex-wrap gap-4 items-end">
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
                     <i class="fas fa-user-md mr-1"></i> Médico
                 </label>
-                <select name="medico" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="this.form.submit()">
+                <select name="medico" id="medico-filter" class="w-full px-4 py-2 border rounded-lg" onchange="this.form.submit()">
                     <option value="">Todos los médicos</option>
                     {% for m in medicos %}
                         <option value="{{ m.id }}" {% if medico and medico.id == m.id %}selected{% endif %}>
@@ -28,154 +37,168 @@
                     {% endfor %}
                 </select>
             </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-filter mr-1"></i> Mostrar
-                </label>
-                <select name="filtro" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="this.form.submit()">
-                    <option value="todos" {% if filtro == "todos" %}selected{% endif %}>Todos los días</option>
-                    <option value="disponibles" {% if filtro == "disponibles" %}selected{% endif %}>Solo disponibles</option>
-                    <option value="ocupados" {% if filtro == "ocupados" %}selected{% endif %}>Solo ocupados</option>
-                </select>
-            </div>
-
             <input type="hidden" name="month" value="{{ mes_num }}">
             <input type="hidden" name="year" value="{{ año }}">
         </form>
     </div>
 
-    <!-- Leyenda -->
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <h3 class="font-semibold text-gray-800 mb-4">
-            <i class="fas fa-info-circle mr-2"></i> Leyenda
-        </h3>
-        <div class="grid md:grid-cols-4 gap-4 text-sm">
-            {% if medico %}
-                <div class="flex items-center">
-                    <div class="w-6 h-6 bg-green-200 border-2 border-green-500 rounded mr-2"></div>
-                    <span>Disponible</span>
+    <div class="grid lg:grid-cols-3 gap-6">
+        <!-- Calendario -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
+                    <div class="flex justify-between items-center">
+                        <a href="?month={{ mes_anterior }}&year={{ año_anterior }}{% if medico %}&medico={{ medico.id }}{% endif %}" 
+                           class="p-2 hover:bg-white/20 rounded transition">
+                            <i class="fas fa-chevron-left text-xl"></i>
+                        </a>
+                        <h2 class="text-2xl font-bold">{{ mes }} {{ año }}</h2>
+                        <a href="?month={{ mes_siguiente }}&year={{ año_siguiente }}{% if medico %}&medico={{ medico.id }}{% endif %}" 
+                           class="p-2 hover:bg-white/20 rounded transition">
+                            <i class="fas fa-chevron-right text-xl"></i>
+                        </a>
+                    </div>
+                    {% if medico %}
+                        <p class="text-center text-blue-100 mt-2">{{ medico.nombre_completo }} - {{ medico.especialidad }}</p>
+                    {% endif %}
                 </div>
-                <div class="flex items-center">
-                    <div class="w-6 h-6 bg-red-200 border-2 border-red-500 rounded mr-2"></div>
-                    <span>Completo</span>
-                </div>
-                <div class="flex items-center">
-                    <div class="w-6 h-6 bg-gray-100 border-2 border-gray-300 rounded mr-2"></div>
-                    <span>Sin horarios</span>
-                </div>
-            {% else %}
-                <div class="flex items-center">
-                    <div class="w-6 h-6 bg-blue-200 border-2 border-blue-500 rounded mr-2"></div>
-                    <span>Con turnos</span>
-                </div>
-                <div class="flex items-center">
-                    <div class="w-6 h-6 bg-gray-100 border-2 border-gray-300 rounded mr-2"></div>
-                    <span>Sin turnos</span>
-                </div>
-            {% endif %}
-            <div class="flex items-center">
-                <div class="w-6 h-6 bg-blue-500 rounded mr-2"></div>
-                <span>Día actual</span>
-            </div>
-        </div>
-    </div>
 
-    <!-- Calendario -->
-    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-        <!-- Header del mes -->
-        <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
-            <div class="flex justify-between items-center">
-                <a href="?month={{ mes_anterior }}&year={{ año_anterior }}{% if medico %}&medico={{ medico.id }}{% endif %}&filtro={{ filtro }}" 
-                   class="text-white hover:text-blue-200 transition">
-                    <i class="fas fa-chevron-left text-2xl"></i>
-                </a>
-                
-                <h2 class="text-3xl font-bold">{{ mes }} {{ año }}</h2>
-                
-                <a href="?month={{ mes_siguiente }}&year={{ año_siguiente }}{% if medico %}&medico={{ medico.id }}{% endif %}&filtro={{ filtro }}" 
-                   class="text-white hover:text-blue-200 transition">
-                    <i class="fas fa-chevron-right text-2xl"></i>
-                </a>
-            </div>
-            {% if medico %}
-                <p class="text-center text-blue-100 mt-2">{{ medico.nombre_completo }} - {{ medico.especialidad }}</p>
-            {% endif %}
-        </div>
-
-        <!-- Días de la semana -->
-        <div class="grid grid-cols-7 bg-gray-100 border-b">
-            {% for dia in dias_semana %}
-                <div class="text-center py-3 font-semibold text-gray-700 border-r last:border-r-0">
-                    {{ dia }}
+                <div class="grid grid-cols-7 bg-gray-100 border-b">
+                    <div class="text-center py-3 font-semibold text-gray-600 border-r">Dom</div>
+                    <div class="text-center py-3 font-semibold text-gray-600 border-r">Lun</div>
+                    <div class="text-center py-3 font-semibold text-gray-600 border-r">Mar</div>
+                    <div class="text-center py-3 font-semibold text-gray-600 border-r">Mié</div>
+                    <div class="text-center py-3 font-semibold text-gray-600 border-r">Jue</div>
+                    <div class="text-center py-3 font-semibold text-gray-600 border-r">Vie</div>
+                    <div class="text-center py-3 font-semibold text-gray-600">Sáb</div>
                 </div>
-            {% endfor %}
-        </div>
 
-        <!-- Días del mes -->
-        {% for semana in calendario %}
-            <div class="grid grid-cols-7 border-b last:border-b-0">
-                {% for dia_data in semana %}
-                    {% if dia_data %}
-                        {% with estado=dia_data.estado %}
-                            {% if filtro == "disponibles" and estado != "disponible" and estado != "con_turnos" %}
-                                <!-- Ocultar día -->
-                            {% elif filtro == "ocupados" and estado != "ocupado" %}
-                                <!-- Ocultar día -->
-                            {% else %}
-                                <div class="border-r last:border-r-0 p-3 min-h-[120px] 
-                                    {% if dia_data.fecha.day == dia_data.fecha.today.day and dia_data.fecha.month == dia_data.fecha.today.month %}bg-blue-500 text-white
+                {% for semana in calendario %}
+                    <div class="grid grid-cols-7 border-b last:border-b-0">
+                        {% for dia_data in semana %}
+                            {% if dia_data %}
+                                <div class="border-r last:border-r-0 p-2 min-h-[100px] 
+                                    {% if dia_data.es_hoy %}bg-blue-600 text-white
+                                    {% elif dia_data.estado == 'pasado' %}bg-gray-100 text-gray-400
+                                    {% elif dia_data.estado == 'cancelado' %}bg-yellow-100
                                     {% elif medico %}
-                                        {% if estado == "disponible" %}bg-green-50 hover:bg-green-100
-                                        {% elif estado == "ocupado" %}bg-red-50 hover:bg-red-100
-                                        {% else %}bg-gray-50 hover:bg-gray-100{% endif %}
+                                        {% if dia_data.estado == 'disponible' %}bg-green-50 hover:bg-green-100 cursor-pointer
+                                        {% elif dia_data.estado == 'completo' %}bg-red-50 hover:bg-red-100 cursor-pointer
+                                        {% elif dia_data.estado == 'sin_horario' %}bg-gray-100
+                                        {% else %}bg-white hover:bg-gray-50{% endif %}
                                     {% else %}
-                                        {% if estado == "con_turnos" %}bg-blue-50 hover:bg-blue-100
-                                        {% else %}bg-gray-50 hover:bg-gray-100{% endif %}
-                                    {% endif %} transition cursor-pointer">
+                                        {% if dia_data.turnos %}bg-blue-50{% else %}bg-white{% endif %}
+                                    {% endif %}"
+                                    {% if dia_data.estado != 'pasado' %}
+                                    onclick="mostrarSlotsDelDia('{{ dia_data.fecha_str }}', {{ medico.id|default:'null' }})"
+                                    {% endif %}>
                                     
-                                    <div class="font-bold mb-2">{{ dia_data.dia }}</div>
+                                    <div class="font-bold text-lg mb-1">{{ dia_data.dia }}</div>
                                     
-                                    {% if medico %}
-                                        {% if dia_data.slots_totales > 0 %}
-                                            <div class="text-xs mb-1">
-                                                <span class="{% if estado == 'disponible' %}text-green-700{% elif estado == 'ocupado' %}text-red-700{% endif %} font-semibold">
-                                                    {{ dia_data.slots_disponibles }}/{{ dia_data.slots_totales }}
-                                                </span>
-                                                <span class="{% if dia_data.fecha.day == dia_data.fecha.today.day %}text-white{% else %}text-gray-600{% endif %}">
-                                                    disponible{{ dia_data.slots_disponibles|pluralize:",s" }}
-                                                </span>
-                                            </div>
-                                        {% endif %}
+                                    {% if medico and dia_data.slots_totales > 0 %}
+                                        <div class="text-xs mb-1 {% if dia_data.es_hoy %}text-blue-100{% else %}text-gray-600{% endif %}">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            {{ dia_data.slots_disponibles }}/{{ dia_data.slots_totales }} disp
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% if dia_data.estado == 'cancelado' %}
+                                        <div class="text-xs font-semibold text-yellow-700">
+                                            <i class="fas fa-ban mr-1"></i>Cancelado
+                                        </div>
                                     {% endif %}
                                     
                                     {% if dia_data.turnos %}
-                                        <div class="text-xs space-y-1 mt-2">
+                                        <div class="mt-1 space-y-1">
                                             {% for turno in dia_data.turnos|slice:":3" %}
-                                                <div class="{% if dia_data.fecha.day == dia_data.fecha.today.day %}bg-white bg-opacity-20 text-white{% else %}bg-white{% endif %} rounded px-2 py-1 truncate">
-                                                    {{ turno.hora|time:"H:i" }} 
-                                                    {% if not medico %}{{ turno.medico.apellido }}{% endif %}
+                                                <div class="text-xs rounded px-1 py-0.5 truncate
+                                                    {% if dia_data.es_hoy %}bg-white/30 text-white{% else %}bg-gray-200{% endif %}">
+                                                    {{ turno.hora|time:"H:i" }}
+                                                    {% if turno.paciente %}
+                                                        {{ turno.paciente.user.get_short_name|default:turno.paciente.user.username|truncatechars:5 }}
+                                                    {% else %}
+                                                        {{ turno.paciente_nombre|truncatechars:5 }}
+                                                    {% endif %}
                                                 </div>
                                             {% endfor %}
                                             {% if dia_data.turnos|length > 3 %}
-                                                <div class="text-xs {% if dia_data.fecha.day == dia_data.fecha.today.day %}text-blue-100{% else %}text-gray-500{% endif %}">
+                                                <div class="text-xs text-center {% if dia_data.es_hoy %}text-blue-200{% else %}text-gray-500{% endif %}">
                                                     +{{ dia_data.turnos|length|add:"-3" }} más
                                                 </div>
                                             {% endif %}
                                         </div>
                                     {% endif %}
                                 </div>
+                            {% else %}
+                                <div class="border-r last:border-r-0 p-2 min-h-[100px] bg-gray-50"></div>
                             {% endif %}
-                        {% endwith %}
-                    {% else %}
-                        <div class="border-r last:border-r-0 p-3 min-h-[120px] bg-gray-100"></div>
-                    {% endif %}
+                        {% endfor %}
+                    </div>
                 {% endfor %}
             </div>
-        {% endfor %}
+
+            <div class="mt-4 bg-gray-100 rounded-lg p-4">
+                <h3 class="font-semibold text-gray-700 mb-3">
+                    <i class="fas fa-info-circle mr-2"></i> Leyenda
+                </h3>
+                <div class="flex flex-wrap gap-4 text-sm">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-green-50 border border-gray-300 rounded mr-2"></div>
+                        <span>Con disponibilidad</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-red-50 border border-gray-300 rounded mr-2"></div>
+                        <span>Completo</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-yellow-100 border border-gray-300 rounded mr-2"></div>
+                        <span>Cancelado</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-blue-600 rounded mr-2"></div>
+                        <span>Hoy</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de Turnos del Día -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-lg p-6 sticky top-4">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-list mr-2 text-blue-600"></i>
+                    Turnos del Día
+                </h3>
+                
+                <div id="dia-seleccionado-info" class="text-center py-8 text-gray-500">
+                    <i class="fas fa-calendar-day text-4xl mb-3 text-gray-300"></i>
+                    <p>Hacé click en un día del calendario para ver los turnos</p>
+                </div>
+
+                <div id="slots-container" class="hidden">
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-700 mb-2">
+                            <span id="fecha-seleccionada-text"></span>
+                        </h4>
+                        <p class="text-sm text-gray-500">
+                            <span id="slots-disponibles-count">0</span> disponibles / 
+                            <span id="slots-totales-count">0</span> totales
+                        </p>
+                    </div>
+
+                    <div id="slots-list" class="space-y-2"></div>
+
+                    <div class="mt-4 pt-4 border-t">
+                        <a id="btn-crear-turno-dia" href="#" 
+                           class="block w-full bg-green-600 text-white text-center py-2 rounded-lg hover:bg-green-700 transition">
+                            <i class="fas fa-plus mr-2"></i> Crear Turno en Esta Fecha
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Información adicional -->
     {% if medico %}
         <div class="mt-6 bg-blue-50 rounded-lg p-6">
             <h3 class="font-semibold text-blue-800 mb-3">
@@ -185,7 +208,7 @@
                 {% for disp in medico.disponibilidades.all %}
                     <div class="flex items-center">
                         <i class="fas fa-calendar-day mr-2"></i>
-                        <span>{{ disp.get_dia_semana_display }}: {{ disp.hora_inicio|time:"H:i" }} - {{ disp.hora_fin|time:"H:i" }} (turnos de {{ disp.duracion_turno }} min)</span>
+                        <span>{{ disp.get_dia_semana_display }}: {{ disp.hora_inicio|time:"H:i" }} - {{ disp.hora_fin|time:"H:i" }} ({{ disp.duracion_turno }} min)</span>
                     </div>
                 {% empty %}
                     <div class="col-span-2 text-gray-600">No hay horarios configurados</div>
@@ -194,4 +217,70 @@
         </div>
     {% endif %}
 </div>
+
+<script>
+function mostrarSlotsDelDia(fecha, medicoId) {
+    const container = document.getElementById('slots-container');
+    const infoDiv = document.getElementById('dia-seleccionado-info');
+    const fechaText = document.getElementById('fecha-seleccionada-text');
+    const slotsList = document.getElementById('slots-list');
+    const disponiblesCount = document.getElementById('slots-disponibles-count');
+    const totalesCount = document.getElementById('slots-totales-count');
+    const btnCrearTurno = document.getElementById('btn-crear-turno-dia');
+
+    if (!medicoId) {
+        alert('Seleccioná un médico primero');
+        return;
+    }
+
+    infoDiv.classList.add('hidden');
+    container.classList.remove('hidden');
+    fechaText.textContent = fecha;
+
+    fetch(`/api/slots-del-dia/?medico_id=${medicoId}&fecha=${fecha}`)
+        .then(r => r.json())
+        .then(data => {
+            disponiblesCount.textContent = data.total_disponibles;
+            totalesCount.textContent = data.slots.length;
+            btnCrearTurno.href = `/secretaria/turnos/crear/?medico=${medicoId}&fecha=${fecha}`;
+
+            if (data.slots.length === 0) {
+                slotsList.innerHTML = '<p class="text-gray-500 text-sm">No hay horarios configurados para este día</p>';
+                return;
+            }
+
+            slotsList.innerHTML = data.slots.map(slot => {
+                if (slot.disponible) {
+                    return `
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                            <div>
+                                <span class="font-semibold text-green-800">${slot.hora}</span>
+                                <span class="text-green-600 text-sm ml-2">Disponible</span>
+                            </div>
+                            <a href="/secretaria/turnos/crear/?medico=${medicoId}&fecha=${fecha}&hora=${slot.hora}" 
+                               class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                                <i class="fas fa-plus mr-1"></i> Turno
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="flex items-center justify-between p-3 bg-gray-100 rounded-lg border border-gray-200">
+                            <div>
+                                <span class="font-semibold text-gray-800">${slot.hora}</span>
+                                <span class="text-gray-600 text-sm ml-2" title="${slot.paciente}">
+                                    <i class="fas fa-user mr-1"></i>${slot.paciente || 'Sin nombre'}
+                                </span>
+                            </div>
+                            <a href="/secretaria/turnos/${slot.turno_id}/editar/" 
+                               class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                                <i class="fas fa-edit mr-1"></i> Ver
+                            </a>
+                        </div>
+                    `;
+                }
+            }).join('');
+        });
+}
+</script>
 {% endblock %}

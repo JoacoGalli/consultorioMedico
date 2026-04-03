@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Cancelación - Consultorio Médico{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">Eliminar Cancelación de Día</h1>
+        
+        <p class="text-gray-600 mb-4">¿Está seguro que desea eliminar esta cancelación?</p>
+        
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <p><strong>Médico:</strong> Dr. {{ cancelacion.medico.nombre_completo }}</p>
+            <p><strong>Fecha:</strong> {{ cancelacion.fecha|date:"d/m/Y" }}</p>
+            <p><strong>Motivo:</strong> {{ cancelacion.motivo }}</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="flex gap-4">
+                <a href="{% url 'gestionar_cancelaciones' %}" class="flex-1 text-center bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300">
+                    Cancelar
+                </a>
+                <button type="submit" class="flex-1 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700">
+                    Eliminar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

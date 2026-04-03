@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:16-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=consultorio
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - consultorio-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    command: gunicorn consultorio.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    volumes:
+      - static_volume:/app/static
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=False
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/consultorio
+      - SECRET_KEY=tu-secret-key-aqui-cambiar-en-produccion
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - consultorio-network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_volume:/app/static:ro
+      - media_volume:/app/media:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+    networks:
+      - consultorio-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+
+networks:
+  consultorio-network:
+    driver: bridge

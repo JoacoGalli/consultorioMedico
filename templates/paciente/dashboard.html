@@ -120,6 +120,11 @@
                                     </p>
                                 {% endif %}
                             </div>
+                            {% if not turno.confirmado %}
+                                <a href="{% url 'confirmar_turno' turno.id %}" class="ml-4 text-green-600 hover:text-green-700">
+                                    <i class="fas fa-check-circle"></i> Confirmar
+                                </a>
+                            {% endif %}
                             {% if turno.puede_cancelar %}
                                 <a href="{% url 'cancelar_turno' turno.id %}" class="ml-4 text-red-600 hover:text-red-700">
                                     <i class="fas fa-times-circle"></i> Cancelar
